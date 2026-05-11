@@ -6,21 +6,23 @@
 <title>pivot</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:          #f7f6f2;
-    --white:       #ffffff;
-    --black:       #0c0c0c;
-    --text:        #1a1a1a;
-    --muted:       #6b6660;
-    --muted2:      #a09c97;
-    --border:      #e3e0da;
-    --border2:     #ccc8c2;
-    --orange:      #e8622a;
-    --orange-soft: #fef1eb;
-    --green:       #1f6b40;
-    --red:         #b83232;
+    --bg:         #f5f4f0;
+    --white:      #ffffff;
+    --black:      #0e0e0e;
+    --text:       #1c1c1c;
+    --muted:      #686460;
+    --muted2:     #a09c97;
+    --border:     #e2dfd9;
+    --border2:    #ccc8c2;
+    --teal:       #1a6b6b;
+    --teal-mid:   #1f8080;
+    --teal-soft:  #eef6f6;
+    --teal-light: #d0eaea;
+    --green:      #1a5c38;
+    --red:        #a83030;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,6 +33,10 @@
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
+    /* Dot grid */
+    background-image: radial-gradient(circle, #c8c4bc 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
   }
 
   /* NAV */
@@ -43,6 +49,8 @@
     position: sticky;
     top: 0;
     z-index: 50;
+    /* Subtle teal underline */
+    border-bottom: 2px solid var(--teal);
   }
 
   .nav-inner {
@@ -55,19 +63,22 @@
   }
 
   .wordmark {
-    font-family: 'Instrument Serif', serif;
-    font-size: 17px;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--white);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
-  .wordmark em { font-style: italic; color: var(--orange); }
+  .wordmark span {
+    color: var(--teal-mid);
+    /* The accent letter */
+  }
 
   .nav-tag {
     font-size: 10px;
     font-weight: 500;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.09em;
     text-transform: uppercase;
   }
 
@@ -79,41 +90,39 @@
   }
 
   /* HEADER */
-  .header {
-    margin-bottom: 28px;
-  }
+  .header { margin-bottom: 24px; }
 
   .eyebrow {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--orange);
-    margin-bottom: 14px;
+    color: var(--teal);
+    margin-bottom: 12px;
   }
 
   .eyebrow::before {
     content: '';
     display: block;
-    width: 20px;
-    height: 1px;
-    background: var(--orange);
+    width: 18px;
+    height: 1.5px;
+    background: var(--teal);
+    flex-shrink: 0;
   }
 
   h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: 36px;
-    font-weight: 400;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
     color: var(--black);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
-  h1 em { font-style: italic; color: var(--orange); }
+  h1 span { color: var(--teal); }
 
   .desc {
     font-size: 13px;
@@ -128,7 +137,9 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.07);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.07);
+    /* Accent bar */
+    border-top: 3px solid var(--teal);
   }
 
   /* TABS */
@@ -140,7 +151,7 @@
 
   .tab {
     flex: 1;
-    padding: 12px 10px;
+    padding: 11px 10px;
     font-size: 11px;
     font-weight: 500;
     color: var(--muted2);
@@ -159,9 +170,9 @@
 
   .tab.active {
     background: var(--white);
-    color: var(--text);
+    color: var(--teal);
     font-weight: 600;
-    border-bottom-color: var(--orange);
+    border-bottom-color: var(--teal);
   }
 
   .tab-sub {
@@ -181,14 +192,17 @@
     border: 1.5px dashed var(--border2);
     border-radius: 8px;
     background: var(--bg);
+    background-image: radial-gradient(circle, #c8c4bc 1px, transparent 1px);
+    background-size: 20px 20px;
     text-align: center;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
 
   .drop-zone:hover, .drop-zone.drag-over {
-    background: var(--orange-soft);
-    border-color: var(--orange);
+    background: var(--teal-soft);
+    background-image: none;
+    border-color: var(--teal);
   }
 
   .drop-icon {
@@ -204,8 +218,8 @@
 
   .drop-zone:hover .drop-icon,
   .drop-zone.drag-over .drop-icon {
-    border-color: var(--orange);
-    color: var(--orange);
+    border-color: var(--teal);
+    color: var(--teal);
   }
 
   .drop-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
@@ -216,7 +230,6 @@
   .sheet-select-wrap { display: none; }
   .sheet-select-wrap.visible { display: block; }
   .divider { height: 1px; background: var(--border); margin: 0 16px; }
-
   .section { padding: 14px 16px; }
 
   .section-label {
@@ -231,14 +244,45 @@
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 11px; border: 1px solid var(--border);
     border-radius: 20px; font-size: 12px; color: var(--text);
-    background: var(--bg); cursor: pointer;
+    background: var(--white); cursor: pointer;
     transition: border-color 0.12s, background 0.12s;
   }
 
-  .sheet-chip:hover { border-color: var(--orange); background: var(--orange-soft); }
+  .sheet-chip:hover { border-color: var(--teal); background: var(--teal-soft); }
   .sheet-chip input[type="checkbox"] {
-    display: block; accent-color: var(--orange);
+    display: block; accent-color: var(--teal);
     width: 12px; height: 12px; cursor: pointer;
+  }
+
+  /* AUDIENCE FILTER */
+  .aud-filter-wrap { display: none; }
+  .aud-filter-wrap.visible { display: block; }
+
+  .aud-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; max-height: 120px; overflow-y: auto; }
+
+  .aud-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 11px; color: var(--text);
+    background: var(--white); cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+  }
+
+  .aud-chip:hover { border-color: var(--teal); background: var(--teal-soft); }
+  .aud-chip input[type="checkbox"] {
+    display: block; accent-color: var(--teal);
+    width: 11px; height: 11px; cursor: pointer;
+  }
+
+  .aud-actions {
+    display: flex; gap: 8px; margin-bottom: 4px;
+  }
+
+  .aud-toggle {
+    font-size: 10px; font-weight: 500; color: var(--teal);
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-family: 'Inter', sans-serif; text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   /* BUTTONS */
@@ -246,29 +290,29 @@
 
   .btn-run {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 9px 18px; background: var(--black); color: var(--white);
+    padding: 9px 18px; background: var(--teal); color: var(--white);
     font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
     border: none; border-radius: 5px; cursor: pointer;
     transition: opacity 0.12s, transform 0.1s;
   }
-  .btn-run:hover { opacity: 0.82; transform: translateY(-1px); }
+  .btn-run:hover { opacity: 0.85; transform: translateY(-1px); }
   .btn-run:active { transform: none; }
 
   .btn-dl {
     display: none; align-items: center; gap: 6px;
-    padding: 9px 18px; background: var(--orange); color: var(--white);
+    padding: 9px 18px; background: var(--black); color: var(--white);
     font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
     border: none; border-radius: 5px; cursor: pointer; text-decoration: none;
     transition: opacity 0.12s, transform 0.1s;
   }
   .btn-dl.visible { display: inline-flex; }
-  .btn-dl:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-dl:hover { opacity: 0.82; transform: translateY(-1px); }
 
   /* PROGRESS */
   .prog-wrap { padding: 0 16px; margin-top: 10px; display: none; }
   .prog-wrap.visible { display: block; }
   .prog-track { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
-  .prog-fill  { height: 100%; background: var(--orange); width: 0%; transition: width 0.25s ease; }
+  .prog-fill  { height: 100%; background: var(--teal); width: 0%; transition: width 0.25s ease; }
   .prog-label { font-size: 10px; color: var(--muted2); margin-top: 5px; }
 
   /* STATUS */
@@ -289,18 +333,23 @@
   .stat { flex: 1; padding: 14px 18px; border-right: 1px solid var(--border); }
   .stat:last-child { border-right: none; }
   .stat-n {
-    font-family: 'Instrument Serif', serif;
-    font-size: 24px; color: var(--black);
-    line-height: 1; margin-bottom: 2px;
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--teal); line-height: 1; margin-bottom: 2px;
   }
   .stat-l { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 16px; }
+    main { padding: 32px 16px 60px; }
+  }
 </style>
 </head>
 <body>
 
 <nav>
   <div class="nav-inner">
-    <span class="wordmark">pi<em>v</em>ot</span>
+    <span class="wordmark">pi<span>v</span>ot</span>
     <span class="nav-tag">Export reformatter</span>
   </div>
 </nav>
@@ -308,7 +357,7 @@
 <main>
   <div class="header">
     <div class="eyebrow">Data tool</div>
-    <h1>Raw export.<br><em>Pivot-ready.</em></h1>
+    <h1>Raw export.<br><span>Pivot-ready.</span></h1>
     <p class="desc">Upload a Nielsen CMV or GWI export and get a clean flat table with all audiences unpivoted.</p>
   </div>
 
@@ -316,7 +365,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="cmv">
         Nielsen CMV
-        <span class="tab-sub">Crosstab</span>
+        <span class="tab-sub">Multizoom</span>
       </div>
       <div class="tab" data-tab="gwi-charts">
         GWI Charts
@@ -340,8 +389,16 @@
       <div class="section">
         <span class="section-label">Sheets</span>
         <div class="sheet-list" id="sheetList"></div>
+        <div class="aud-filter-wrap" id="audWrap">
+          <span class="section-label" style="margin-top:4px;">Audiences</span>
+          <div class="aud-actions">
+            <button class="aud-toggle" id="audSelectAll">Select all</button>
+            <button class="aud-toggle" id="audDeselectAll">Deselect all</button>
+          </div>
+          <div class="aud-list" id="audList"></div>
+        </div>
         <div class="actions">
-          <button class="btn-run" id="runBtn">Convert →</button>
+          <button class="btn-run" id="runBtn">Pivot →</button>
           <a class="btn-dl" id="downloadBtn">↓ Download</a>
         </div>
       </div>
@@ -365,12 +422,14 @@
 </main>
 
 <script>
-let activeTab = 'cmv', wb = null;
+let activeTab = 'cmv', wb = null, detectedAudiences = [];
 
 const dropZone  = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const sheetWrap = document.getElementById('sheetWrap');
 const sheetList = document.getElementById('sheetList');
+const audWrap   = document.getElementById('audWrap');
+const audList   = document.getElementById('audList');
 const runBtn    = document.getElementById('runBtn');
 const dlBtn     = document.getElementById('downloadBtn');
 const progWrap  = document.getElementById('progWrap');
@@ -389,9 +448,18 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
+document.getElementById('audSelectAll').addEventListener('click', () => {
+  audList.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = true);
+});
+
+document.getElementById('audDeselectAll').addEventListener('click', () => {
+  audList.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+});
+
 function resetUI() {
-  wb = null; fileInput.value = '';
+  wb = null; fileInput.value = ''; detectedAudiences = [];
   sheetWrap.className = 'sheet-select-wrap';
+  audWrap.className   = 'aud-filter-wrap';
   progWrap.className  = 'prog-wrap';
   statWrap.className  = 'status-wrap';
   outStats.className  = 'out-stats';
@@ -427,6 +495,8 @@ function load(file) {
       wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
       const names = wb.SheetNames;
       setProgress(40, `${names.length} sheet(s) found`);
+
+      // Build sheet chips
       sheetList.innerHTML = '';
       names.forEach(name => {
         const lbl = document.createElement('label');
@@ -434,20 +504,50 @@ function load(file) {
         lbl.innerHTML = `<input type="checkbox" checked value="${name}"> ${name}`;
         sheetList.appendChild(lbl);
       });
+
+      // Detect audiences from first sheet
+      detectAudiences(wb.Sheets[names[0]]);
+
       sheetWrap.className = 'sheet-select-wrap visible';
       setStatus(`"${file.name}" loaded.`);
-    } catch { setStatus('Could not read file. Check it is a valid .xlsx export.', 'err'); }
+    } catch (err) { setStatus('Could not read file. Check it is a valid .xlsx export.', 'err'); }
   };
   reader.readAsArrayBuffer(file);
+}
+
+function detectAudiences(ws) {
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+  const audRow = activeTab === 'cmv' ? (raw[1] || []) : (raw[14] || []);
+  const startCol = activeTab === 'cmv' ? 1 : 2;
+  const seen = new Set();
+  detectedAudiences = [];
+  for (let c = startCol; c < audRow.length; c++) {
+    if (audRow[c] != null && String(audRow[c]).trim()) {
+      const a = String(audRow[c]).trim();
+      if (!seen.has(a)) { seen.add(a); detectedAudiences.push(a); }
+    }
+  }
+  audList.innerHTML = '';
+  if (detectedAudiences.length > 0) {
+    detectedAudiences.forEach(aud => {
+      const lbl = document.createElement('label');
+      lbl.className = 'aud-chip';
+      lbl.innerHTML = `<input type="checkbox" checked value="${aud}"> ${aud}`;
+      audList.appendChild(lbl);
+    });
+    audWrap.className = 'aud-filter-wrap visible';
+  }
 }
 
 runBtn.addEventListener('click', () => {
   const sel = [...sheetList.querySelectorAll('input:checked')].map(c => c.value);
   if (!sel.length) { setStatus('Select at least one sheet.', 'err'); return; }
-  convert(sel);
+  const selAud = [...audList.querySelectorAll('input:checked')].map(c => c.value);
+  if (detectedAudiences.length > 0 && !selAud.length) { setStatus('Select at least one audience.', 'err'); return; }
+  convert(sel, selAud);
 });
 
-function parseCMV(ws) {
+function parseCMV(ws, selAud) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
   if (raw.length < 4) return [];
   const audRow = raw[1] || [], varRow = raw[2] || [];
@@ -459,6 +559,7 @@ function parseCMV(ws) {
     if (varRow[c] != null && String(varRow[c]).trim() && cur) avc[cur + '|||' + String(varRow[c]).trim()] = c;
   }
   if (!order.length) return [];
+  const filteredOrder = selAud.length ? order.filter(a => selAud.includes(a)) : order;
   const SKIP = ['Source:', 'Weighted by:', 'The Nielsen Company'];
   const rows = [];
   for (let i = 3; i < raw.length; i++) {
@@ -469,7 +570,7 @@ function parseCMV(ws) {
     let q, a;
     if (lbl === 'Totals') { q = 'Totals'; a = ''; }
     else { const m = lbl.match(/^(.*?)\s*\[(.+)\]\s*$/); if (m) { q = m[1].trim(); a = m[2].trim(); } else { q = lbl; a = ''; } }
-    for (const aud of order) {
+    for (const aud of filteredOrder) {
       const r = { Question: q, Answer: a, 'Target Audience': aud };
       for (const v of VARS) { const ci = avc[aud + '|||' + v]; r[v] = (ci != null && row[ci] != null) ? row[ci] : ''; }
       rows.push(r);
@@ -478,7 +579,7 @@ function parseCMV(ws) {
   return rows;
 }
 
-function parseGWI(ws) {
+function parseGWI(ws, selAud) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
   if (raw.length < 17) return [];
   const audRow = raw[14] || [], varRow = raw[15] || [];
@@ -489,6 +590,7 @@ function parseGWI(ws) {
     if (varRow[c] != null && String(varRow[c]).trim() && cur) { const v = String(varRow[c]).trim(); if (!varSet.includes(v)) varSet.push(v); avc[cur + '|||' + v] = c; }
   }
   if (!order.length) return [];
+  const filteredOrder = selAud.length ? order.filter(a => selAud.includes(a)) : order;
   const rows = [];
   for (let i = 16; i < raw.length; i++) {
     const row = raw[i];
@@ -496,7 +598,7 @@ function parseGWI(ws) {
     const q = row[0] != null ? String(row[0]).trim() : '';
     const attr = row[1] != null ? String(row[1]).trim() : '';
     if (!q && !attr) continue;
-    for (const aud of order) {
+    for (const aud of filteredOrder) {
       const r = { Question: q, Attributes: attr, 'Target Audience': aud };
       for (const v of varSet) { const ci = avc[aud + '|||' + v]; r[v] = (ci != null && row[ci] != null) ? row[ci] : ''; }
       rows.push(r);
@@ -505,33 +607,61 @@ function parseGWI(ws) {
   return rows;
 }
 
-async function convert(sheets) {
+async function convert(sheets, selAud) {
   setProgress(40, 'Processing...'); statWrap.className = 'status-wrap'; outStats.className = 'out-stats'; dlBtn.className = 'btn-dl';
   await tick();
   try {
     const newWb = XLSX.utils.book_new();
     let totalRows = 0; const audSet = new Set();
     const step = 50 / sheets.length; let prog = 40;
+    const logRows = [];
+    const startTime = new Date();
+
     for (const name of sheets) {
       const ws = wb.Sheets[name];
-      const rows = activeTab === 'cmv' ? parseCMV(ws) : parseGWI(ws);
+      const rows = activeTab === 'cmv' ? parseCMV(ws, selAud) : parseGWI(ws, selAud);
       rows.forEach(r => audSet.add(r['Target Audience'])); totalRows += rows.length;
+
       const headers = rows.length ? Object.keys(rows[0]) : [];
       const data = [headers, ...rows.map(r => headers.map(h => r[h] ?? ''))];
       const newWs = XLSX.utils.aoa_to_sheet(data);
       newWs['!cols'] = headers.map((_, i) => ({ wch: i < 3 ? (i === 2 ? 32 : 44) : 14 }));
       XLSX.utils.book_append_sheet(newWb, newWs, name);
+
+      logRows.push({ Sheet: name, 'Output Rows': rows.length, 'Audiences Included': [...new Set(rows.map(r => r['Target Audience']))].join(', ') });
+
       prog += step; setProgress(Math.round(prog), `Processed: ${name}`); await tick();
     }
+
+    // Build log sheet
+    const tabLabel = activeTab === 'cmv' ? 'Nielsen CMV (Multizoom)' : activeTab === 'gwi-charts' ? 'GWI Charts' : 'GWI Crosstabs';
+    const logData = [
+      ['pivot — Conversion Log'],
+      [],
+      ['Generated', startTime.toLocaleString()],
+      ['Source type', tabLabel],
+      ['Sheets processed', sheets.length],
+      ['Total output rows', totalRows],
+      ['Audiences included', [...audSet].join(', ')],
+      [],
+      ['— Per Sheet Breakdown —'],
+      ['Sheet', 'Output Rows', 'Audiences Included'],
+      ...logRows.map(r => [r['Sheet'], r['Output Rows'], r['Audiences Included']])
+    ];
+    const logWs = XLSX.utils.aoa_to_sheet(logData);
+    logWs['!cols'] = [{ wch: 24 }, { wch: 14 }, { wch: 80 }];
+    XLSX.utils.book_append_sheet(newWb, logWs, 'Log');
+
     setProgress(95, 'Generating file...'); await tick();
     const blob = new Blob([XLSX.write(newWb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
     dlBtn.href = URL.createObjectURL(blob); dlBtn.download = 'pivot_output.xlsx'; dlBtn.className = 'btn-dl visible';
+
     document.getElementById('statSheets').textContent = sheets.length;
     document.getElementById('statRows').textContent = totalRows.toLocaleString();
     document.getElementById('statAud').textContent = audSet.size;
     outStats.className = 'out-stats visible';
     setProgress(100, 'Done');
-    setStatus(`${totalRows.toLocaleString()} rows across ${sheets.length} sheet(s).`, 'ok');
+    setStatus(`${totalRows.toLocaleString()} rows across ${sheets.length} sheet(s). Log sheet included.`, 'ok');
   } catch (err) { setStatus('Error: ' + err.message, 'err'); }
 }
 
