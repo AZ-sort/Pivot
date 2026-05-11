@@ -3,425 +3,638 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CMV Reformatter</title>
+<title>pivot</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
-
   :root {
-    --bg: #0d0e12;
-    --surface: #16181f;
-    --surface2: #1e2029;
-    --border: #2a2d38;
-    --accent: #c8f05a;
-    --text: #e8eaf0;
-    --muted: #5a5f72;
-    --error: #f05a5a;
+    --bg:          #f7f6f2;
+    --white:       #ffffff;
+    --black:       #0c0c0c;
+    --text:        #1a1a1a;
+    --muted:       #6b6660;
+    --muted2:      #a09c97;
+    --border:      #e3e0da;
+    --border2:     #ccc8c2;
+    --orange:      #e8622a;
+    --orange-soft: #fef1eb;
+    --green:       #1f6b40;
+    --red:         #b83232;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
+    font-family: 'Inter', -apple-system, sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    -webkit-font-smoothing: antialiased;
     min-height: 100vh;
-    overflow-x: hidden;
   }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
+  /* ── NAV ── */
+  nav {
+    background: var(--black);
+    height: 54px;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
+  .nav-inner {
+    max-width: 1080px;
+    width: 100%;
     margin: 0 auto;
-    padding: 60px 32px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  header { margin-bottom: 56px; }
+  .wordmark {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    color: var(--white);
+    letter-spacing: -0.01em;
+  }
 
-  .tag {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
+  .wordmark em {
+    font-style: italic;
+    color: var(--orange);
+  }
+
+  .nav-pill {
     font-size: 11px;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 4px 10px;
-    margin-bottom: 20px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
+  /* ── LAYOUT ── */
+  .hero {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 72px 40px 96px;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 72px;
+    align-items: start;
+  }
+
+  /* ── LEFT COPY ── */
+  .copy { padding-top: 8px; }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--orange);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--orange);
+    flex-shrink: 0;
+  }
+
   h1 {
-    font-size: clamp(36px, 6vw, 64px);
-    font-weight: 800;
-    line-height: 1.0;
-    letter-spacing: -0.02em;
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(38px, 4.5vw, 56px);
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: var(--black);
+    margin-bottom: 20px;
   }
 
-  h1 span { color: var(--accent); }
+  h1 em {
+    font-style: italic;
+    color: var(--orange);
+  }
 
-  .subtitle {
-    margin-top: 16px;
+  .copy-desc {
+    font-size: 14px;
+    line-height: 1.75;
     color: var(--muted);
-    font-size: 15px;
-    max-width: 480px;
-    line-height: 1.6;
-    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    max-width: 340px;
+    margin-bottom: 36px;
   }
 
-  .drop-zone {
-    border: 1.5px dashed var(--border);
-    background: var(--surface);
-    border-radius: 2px;
-    padding: 56px 32px;
+  .copy-rule {
+    width: 40px;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 13px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted2);
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-    overflow: hidden;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.12s, background 0.12s;
+    user-select: none;
+    border-right: 1px solid var(--border);
+    line-height: 1.35;
   }
 
-  .drop-zone::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 120%, rgba(200,240,90,0.06) 0%, transparent 70%);
-    pointer-events: none;
+  .tab:last-child { border-right: none; }
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    background: var(--white);
+    color: var(--text);
+    border-bottom-color: var(--orange);
+    font-weight: 600;
   }
 
-  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--surface2); }
+  .tab-sub {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--muted2);
+    margin-top: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── DROP ── */
+  .drop-zone {
+    margin: 18px;
+    padding: 44px 24px;
+    border: 1.5px dashed var(--border2);
+    border-radius: 8px;
+    background: var(--bg);
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    background: var(--orange-soft);
+    border-color: var(--orange);
+  }
 
   .drop-icon {
-    width: 48px; height: 48px;
-    margin: 0 auto 20px;
-    border: 1.5px solid var(--border);
-    border-radius: 2px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--accent);
-    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 14px;
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--muted);
+    transition: border-color 0.15s, color 0.15s;
   }
 
-  .drop-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .drop-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .drop-zone:hover .drop-icon,
+  .drop-zone.drag-over .drop-icon {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  .drop-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .drop-sub-text {
+    font-size: 11px;
+    color: var(--muted2);
+  }
+
   input[type="file"] { display: none; }
 
-  .status-panel {
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 2px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    display: none;
-  }
-  .status-panel.visible { display: block; }
-  .status-panel.error { border-left-color: var(--error); }
-  .status-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-  .status-value { color: var(--text); line-height: 1.7; }
-
-  .stats-row { display: none; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
-  .stats-row.visible { display: grid; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 20px; }
-  .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-  .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-
-  .btn {
-    display: none; align-items: center; gap: 10px;
-    padding: 14px 28px;
-    background: var(--accent); color: #0d0e12;
-    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    border: none; border-radius: 2px; cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    text-decoration: none; margin-top: 24px;
-  }
-  .btn.visible { display: inline-flex; }
-  .btn:hover { opacity: 0.85; transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
-
-  .progress-bar { height: 2px; background: var(--border); margin-top: 20px; border-radius: 1px; overflow: hidden; display: none; }
-  .progress-bar.visible { display: block; }
-  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
-
-  .sheet-select-wrap { margin-top: 20px; display: none; }
+  /* ── SHEET SELECTOR ── */
+  .sheet-select-wrap { display: none; }
   .sheet-select-wrap.visible { display: block; }
-  .sheet-select-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
-  .sheet-checkboxes { display: flex; flex-wrap: wrap; gap: 10px; }
-  .sheet-checkbox { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); padding: 8px 14px; border-radius: 2px; cursor: pointer; font-size: 13px; transition: border-color 0.15s; }
-  .sheet-checkbox:hover { border-color: var(--accent); }
-  .sheet-checkbox input[type="checkbox"] { display: block; accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 
-  .run-btn {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 12px 24px; background: transparent; color: var(--accent);
-    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    border: 1.5px solid var(--accent); border-radius: 2px; cursor: pointer;
-    transition: background 0.15s; margin-top: 16px;
+  .divider { height: 1px; background: var(--border); margin: 0 18px; }
+
+  .section { padding: 16px 18px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted2);
+    margin-bottom: 10px;
+    display: block;
   }
-  .run-btn:hover { background: rgba(200,240,90,0.08); }
 
-  .separator { height: 1px; background: var(--border); margin: 40px 0; }
+  .sheet-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
 
-  .how-title { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 20px; }
-  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .step { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 16px; }
-  .step-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 8px; }
-  .step-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .sheet-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+  }
 
-  @media (max-width: 600px) {
-    .steps { grid-template-columns: repeat(2, 1fr); }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .sheet-chip:hover { border-color: var(--orange); background: var(--orange-soft); }
+  .sheet-chip input[type="checkbox"] {
+    display: block;
+    accent-color: var(--orange);
+    width: 12px; height: 12px;
+    cursor: pointer;
+  }
+
+  /* ── BUTTONS ── */
+  .actions { display: flex; align-items: center; gap: 8px; }
+
+  .btn-run {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.12s, transform 0.1s;
+  }
+
+  .btn-run:hover { opacity: 0.82; transform: translateY(-1px); }
+  .btn-run:active { transform: translateY(0); }
+
+  .btn-dl {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: var(--orange);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.12s, transform 0.1s;
+  }
+
+  .btn-dl.visible { display: inline-flex; }
+  .btn-dl:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  /* ── PROGRESS ── */
+  .prog-wrap { padding: 0 18px; margin-top: 12px; display: none; }
+  .prog-wrap.visible { display: block; }
+  .prog-track { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--orange); width: 0%; transition: width 0.25s ease; }
+  .prog-label { font-size: 11px; color: var(--muted2); margin-top: 5px; }
+
+  /* ── STATUS ── */
+  .status-wrap { padding: 10px 18px 4px; display: none; }
+  .status-wrap.visible { display: block; }
+  .status-msg {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 9px 12px;
+    background: var(--bg);
+    border-left: 2px solid var(--border2);
+    border-radius: 2px;
+  }
+  .status-msg.ok  { border-left-color: var(--green); color: var(--green); }
+  .status-msg.err { border-left-color: var(--red);   color: var(--red);   }
+
+  /* ── STATS ── */
+  .out-stats { display: none; border-top: 1px solid var(--border); }
+  .out-stats.visible { display: flex; }
+
+  .stat {
+    flex: 1;
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-n {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    color: var(--black);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .stat-l {
+    font-size: 11px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .hero { grid-template-columns: 1fr; padding: 40px 20px 60px; gap: 36px; }
+    .copy-desc { max-width: 100%; }
+    .tab-sub { display: none; }
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <div class="tag">Nielsen CMV</div>
-    <h1>DATA<br><span>REFORMATTER</span></h1>
-    <p class="subtitle">Drop your raw CMV export. Get a pivot-ready flat table in seconds.</p>
-  </header>
 
-  <div class="drop-zone" id="dropZone">
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
-    <div class="drop-icon">↑</div>
-    <div class="drop-title">Drop your CMV export here</div>
-    <div class="drop-sub">or click to browse — .xlsx / .xls</div>
+<nav>
+  <div class="nav-inner">
+    <span class="wordmark">pi<em>v</em>ot</span>
+    <span class="nav-pill">Export reformatter</span>
+  </div>
+</nav>
+
+<div class="hero">
+
+  <div class="copy">
+    <div class="eyebrow">Data tool</div>
+    <h1>Raw export.<br><em>Pivot-ready.</em></h1>
+    <p class="copy-desc">Upload a Nielsen CMV or GWI export and get a clean flat table with all audiences unpivoted.</p>
+    <div class="copy-rule"></div>
   </div>
 
-  <div class="sheet-select-wrap" id="sheetWrap">
-    <span class="sheet-select-label">Select sheets to process</span>
-    <div class="sheet-checkboxes" id="sheetCheckboxes"></div>
-    <button class="run-btn" id="runBtn">→ Run Conversion</button>
-  </div>
+  <div class="card">
 
-  <div class="progress-bar" id="progressBar">
-    <div class="progress-fill" id="progressFill"></div>
-  </div>
-
-  <div class="status-panel" id="statusPanel">
-    <div class="status-label">Status</div>
-    <div class="status-value" id="statusValue"></div>
-  </div>
-
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card"><div class="stat-num" id="statSheets">0</div><div class="stat-label">Sheets processed</div></div>
-    <div class="stat-card"><div class="stat-num" id="statRows">0</div><div class="stat-label">Data rows output</div></div>
-    <div class="stat-card"><div class="stat-num" id="statAudiences">0</div><div class="stat-label">Target audiences</div></div>
-  </div>
-
-  <a class="btn" id="downloadBtn"><span>↓</span> Download pivot-ready file</a>
-
-  <div class="separator"></div>
-
-  <div>
-    <div class="how-title">How it works</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">01</div><div class="step-text">Reads the wide CMV format where each row is one question and audiences span across columns</div></div>
-      <div class="step"><div class="step-num">02</div><div class="step-text">Splits "Question [Answer]" labels into separate Question and Answer columns</div></div>
-      <div class="step"><div class="step-num">03</div><div class="step-text">Unpivots all audience column groups into a single Target Audience column</div></div>
-      <div class="step"><div class="step-num">04</div><div class="step-text">Outputs one row per Question + Audience, with Unwgt, (000s), Vert%, Horz%, Index as separate columns</div></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="cmv">
+        Nielsen CMV
+        <span class="tab-sub">Crosstab</span>
+      </div>
+      <div class="tab" data-tab="gwi-charts">
+        GWI Charts
+        <span class="tab-sub">Chart export</span>
+      </div>
+      <div class="tab" data-tab="gwi-crosstabs">
+        GWI Crosstabs
+        <span class="tab-sub">Crosstab</span>
+      </div>
     </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+      <div class="drop-icon">↑</div>
+      <div class="drop-title">Drop your file here</div>
+      <div class="drop-sub-text">.xlsx or .xls — click to browse</div>
+    </div>
+
+    <div class="sheet-select-wrap" id="sheetWrap">
+      <div class="divider"></div>
+      <div class="section">
+        <span class="section-label">Sheets</span>
+        <div class="sheet-list" id="sheetList"></div>
+        <div class="actions">
+          <button class="btn-run" id="runBtn">Convert →</button>
+          <a class="btn-dl" id="downloadBtn">↓ Download</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+      <div class="prog-label" id="progLabel">Processing...</div>
+    </div>
+
+    <div class="status-wrap" id="statusWrap">
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="out-stats" id="outStats">
+      <div class="stat"><div class="stat-n" id="statSheets">0</div><div class="stat-l">Sheets</div></div>
+      <div class="stat"><div class="stat-n" id="statRows">0</div><div class="stat-l">Rows</div></div>
+      <div class="stat"><div class="stat-n" id="statAud">0</div><div class="stat-l">Audiences</div></div>
+    </div>
+
   </div>
 </div>
 
 <script>
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const statusPanel = document.getElementById('statusPanel');
-const statusValue = document.getElementById('statusValue');
-const progressBar = document.getElementById('progressBar');
-const progressFill = document.getElementById('progressFill');
-const statsRow = document.getElementById('statsRow');
-const downloadBtn = document.getElementById('downloadBtn');
-const sheetWrap = document.getElementById('sheetWrap');
-const sheetCheckboxes = document.getElementById('sheetCheckboxes');
-const runBtn = document.getElementById('runBtn');
+let activeTab = 'cmv';
+let wb = null;
 
-let workbookData = null;
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const sheetWrap = document.getElementById('sheetWrap');
+const sheetList = document.getElementById('sheetList');
+const runBtn    = document.getElementById('runBtn');
+const dlBtn     = document.getElementById('downloadBtn');
+const progWrap  = document.getElementById('progWrap');
+const progFill  = document.getElementById('progFill');
+const progLabel = document.getElementById('progLabel');
+const statWrap  = document.getElementById('statusWrap');
+const statMsg   = document.getElementById('statusMsg');
+const outStats  = document.getElementById('outStats');
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    activeTab = t.dataset.tab;
+    resetUI();
+  });
+});
+
+function resetUI() {
+  wb = null; fileInput.value = '';
+  sheetWrap.className = 'sheet-select-wrap';
+  progWrap.className  = 'prog-wrap';
+  statWrap.className  = 'status-wrap';
+  outStats.className  = 'out-stats';
+  dlBtn.className     = 'btn-dl';
+}
+
+function setStatus(msg, type = '') {
+  statWrap.className = 'status-wrap visible';
+  statMsg.className  = 'status-msg' + (type ? ' ' + type : '');
+  statMsg.textContent = msg;
+}
+
+function setProgress(pct, label = '') {
+  progWrap.className = 'prog-wrap visible';
+  progFill.style.width = pct + '%';
+  if (label) progLabel.textContent = label;
+}
 
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); load(e.dataTransfer.files[0]); });
 dropZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+fileInput.addEventListener('change', () => load(fileInput.files[0]));
 
-function setStatus(msg, isError = false) {
-  statusPanel.className = 'status-panel visible' + (isError ? ' error' : '');
-  statusValue.textContent = msg;
-}
-
-function setProgress(pct) {
-  progressBar.className = 'progress-bar visible';
-  progressFill.style.width = pct + '%';
-}
-
-function handleFile(file) {
+function load(file) {
   if (!file) return;
-  if (!file.name.match(/\.xlsx?$/i)) { setStatus('Please upload an .xlsx or .xls file.', true); return; }
-
-  setStatus(`Reading "${file.name}"...`);
-  setProgress(10);
-  statsRow.className = 'stats-row';
-  downloadBtn.className = 'btn';
-  sheetWrap.className = 'sheet-select-wrap';
-
+  if (!file.name.match(/\.xlsx?$/i)) { setStatus('Please upload an .xlsx or .xls file.', 'err'); return; }
+  resetUI();
+  setProgress(15, 'Reading...');
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = e => {
     try {
-      workbookData = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-      const sheetNames = workbookData.SheetNames;
-      setProgress(30);
-      setStatus(`Loaded "${file.name}" — ${sheetNames.length} sheet(s) found. Select sheets and run.`);
-
-      sheetCheckboxes.innerHTML = '';
-      sheetNames.forEach(name => {
-        const label = document.createElement('label');
-        label.className = 'sheet-checkbox';
-        label.innerHTML = `<input type="checkbox" checked value="${name}"> ${name}`;
-        sheetCheckboxes.appendChild(label);
+      wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const names = wb.SheetNames;
+      setProgress(40, `${names.length} sheet(s) found`);
+      sheetList.innerHTML = '';
+      names.forEach(name => {
+        const lbl = document.createElement('label');
+        lbl.className = 'sheet-chip';
+        lbl.innerHTML = `<input type="checkbox" checked value="${name}"> ${name}`;
+        sheetList.appendChild(lbl);
       });
       sheetWrap.className = 'sheet-select-wrap visible';
-    } catch (err) {
-      setStatus('Could not read the file. Make sure it is a valid .xlsx export.', true);
-    }
+      setStatus(`"${file.name}" loaded.`);
+    } catch { setStatus('Could not read file. Check it is a valid .xlsx export.', 'err'); }
   };
   reader.readAsArrayBuffer(file);
 }
 
 runBtn.addEventListener('click', () => {
-  const selected = [...sheetCheckboxes.querySelectorAll('input:checked')].map(c => c.value);
-  if (!selected.length) { setStatus('Select at least one sheet.', true); return; }
-  convertSheets(selected);
+  const sel = [...sheetList.querySelectorAll('input:checked')].map(c => c.value);
+  if (!sel.length) { setStatus('Select at least one sheet.', 'err'); return; }
+  convert(sel);
 });
 
-function parseSheet(ws) {
+function parseCMV(ws) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
   if (raw.length < 4) return [];
-
-  // Row index 1: audience names — sparse, only at first col of each 5-col group
-  // Row index 2: variable types — repeating pattern per audience group
-  // Row index 3+: data rows
-  const audRow = raw[1] || [];
-  const varRow = raw[2] || [];
-
-  const VARIABLES = ['Unwgt', '(000s)', 'Vert%', 'Horz%', 'Index'];
-
-  // Build: audVarCol[(audience, variable)] = colIndex
-  // Also track ordered unique audiences
-  const audVarCol = {};
-  const audienceOrder = [];
-  let currentAud = null;
+  const audRow = raw[1] || [], varRow = raw[2] || [];
+  const VARS = ['Unwgt', '(000s)', 'Vert%', 'Horz%', 'Index'];
+  const avc = {}, order = [];
+  let cur = null;
   for (let c = 1; c < varRow.length; c++) {
-    if (audRow[c] != null && String(audRow[c]).trim()) {
-      currentAud = String(audRow[c]).trim();
-      if (!audienceOrder.includes(currentAud)) audienceOrder.push(currentAud);
-    }
-    if (varRow[c] != null && String(varRow[c]).trim() && currentAud) {
-      audVarCol[currentAud + '|||' + String(varRow[c]).trim()] = c;
-    }
+    if (audRow[c] != null && String(audRow[c]).trim()) { cur = String(audRow[c]).trim(); if (!order.includes(cur)) order.push(cur); }
+    if (varRow[c] != null && String(varRow[c]).trim() && cur) avc[cur + '|||' + String(varRow[c]).trim()] = c;
   }
-
-  if (!audienceOrder.length) return [];
-
-  const FOOTER = ['Source:', 'Weighted by:', 'The Nielsen Company'];
+  if (!order.length) return [];
+  const SKIP = ['Source:', 'Weighted by:', 'The Nielsen Company'];
   const rows = [];
-
   for (let i = 3; i < raw.length; i++) {
     const row = raw[i];
-    if (!row || row[0] == null || String(row[0]).trim() === '') continue;
-    const label = String(row[0]).trim();
-    if (FOOTER.some(f => label.startsWith(f))) continue;
-
-    let question, answer;
-    if (label === 'Totals') {
-      question = 'Totals'; answer = '';
-    } else {
-      const m = label.match(/^(.*?)\s*\[(.+)\]\s*$/);
-      if (m) { question = m[1].trim(); answer = m[2].trim(); }
-      else { question = label; answer = ''; }
-    }
-
-    for (const aud of audienceOrder) {
-      const outRow = { Question: question, Answer: answer, 'Target Audience': aud };
-      for (const v of VARIABLES) {
-        const key = aud + '|||' + v;
-        const colIdx = audVarCol[key];
-        outRow[v] = (colIdx != null && row[colIdx] != null) ? row[colIdx] : '';
-      }
-      rows.push(outRow);
+    if (!row || row[0] == null || !String(row[0]).trim()) continue;
+    const lbl = String(row[0]).trim();
+    if (SKIP.some(s => lbl.startsWith(s))) continue;
+    let q, a;
+    if (lbl === 'Totals') { q = 'Totals'; a = ''; }
+    else { const m = lbl.match(/^(.*?)\s*\[(.+)\]\s*$/); if (m) { q = m[1].trim(); a = m[2].trim(); } else { q = lbl; a = ''; } }
+    for (const aud of order) {
+      const r = { Question: q, Answer: a, 'Target Audience': aud };
+      for (const v of VARS) { const ci = avc[aud + '|||' + v]; r[v] = (ci != null && row[ci] != null) ? row[ci] : ''; }
+      rows.push(r);
     }
   }
-
   return rows;
 }
 
-async function convertSheets(selectedSheets) {
-  setStatus('Processing...');
-  setProgress(40);
-  sheetWrap.className = 'sheet-select-wrap';
-  await new Promise(r => setTimeout(r, 20));
+function parseGWI(ws) {
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+  if (raw.length < 17) return [];
+  const audRow = raw[14] || [], varRow = raw[15] || [];
+  const avc = {}, order = [], varSet = [];
+  let cur = null;
+  for (let c = 2; c < varRow.length; c++) {
+    if (audRow[c] != null && String(audRow[c]).trim()) { cur = String(audRow[c]).trim(); if (!order.includes(cur)) order.push(cur); }
+    if (varRow[c] != null && String(varRow[c]).trim() && cur) { const v = String(varRow[c]).trim(); if (!varSet.includes(v)) varSet.push(v); avc[cur + '|||' + v] = c; }
+  }
+  if (!order.length) return [];
+  const rows = [];
+  for (let i = 16; i < raw.length; i++) {
+    const row = raw[i];
+    if (!row) continue;
+    const q = row[0] != null ? String(row[0]).trim() : '';
+    const attr = row[1] != null ? String(row[1]).trim() : '';
+    if (!q && !attr) continue;
+    for (const aud of order) {
+      const r = { Question: q, Attributes: attr, 'Target Audience': aud };
+      for (const v of varSet) { const ci = avc[aud + '|||' + v]; r[v] = (ci != null && row[ci] != null) ? row[ci] : ''; }
+      rows.push(r);
+    }
+  }
+  return rows;
+}
 
+async function convert(sheets) {
+  setProgress(40, 'Processing...'); statWrap.className = 'status-wrap'; outStats.className = 'out-stats'; dlBtn.className = 'btn-dl';
+  await tick();
   try {
     const newWb = XLSX.utils.book_new();
-    let totalRows = 0;
-    const audienceSet = new Set();
-    const step = 50 / selectedSheets.length;
-    let prog = 40;
-
-    for (const sheetName of selectedSheets) {
-      const ws = workbookData.Sheets[sheetName];
-      const rows = parseSheet(ws);
-      rows.forEach(r => audienceSet.add(r['Target Audience']));
-      totalRows += rows.length;
-
-      const headers = ['Question', 'Answer', 'Target Audience', 'Unwgt', '(000s)', 'Vert%', 'Horz%', 'Index'];
-      const wsData = [headers, ...rows.map(r => headers.map(h => r[h]))];
-      const newWs = XLSX.utils.aoa_to_sheet(wsData);
-      newWs['!cols'] = [{ wch: 45 }, { wch: 60 }, { wch: 50 }, { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
-      XLSX.utils.book_append_sheet(newWb, newWs, sheetName);
-
-      prog += step;
-      setProgress(Math.round(prog));
-      await new Promise(r => setTimeout(r, 10));
+    let totalRows = 0; const audSet = new Set();
+    const step = 50 / sheets.length; let prog = 40;
+    for (const name of sheets) {
+      const ws = wb.Sheets[name];
+      const rows = activeTab === 'cmv' ? parseCMV(ws) : parseGWI(ws);
+      rows.forEach(r => audSet.add(r['Target Audience'])); totalRows += rows.length;
+      const headers = rows.length ? Object.keys(rows[0]) : [];
+      const data = [headers, ...rows.map(r => headers.map(h => r[h] ?? ''))];
+      const newWs = XLSX.utils.aoa_to_sheet(data);
+      newWs['!cols'] = headers.map((_, i) => ({ wch: i < 3 ? (i === 2 ? 32 : 44) : 14 }));
+      XLSX.utils.book_append_sheet(newWb, newWs, name);
+      prog += step; setProgress(Math.round(prog), `Processed: ${name}`); await tick();
     }
-
-    setProgress(95);
-    await new Promise(r => setTimeout(r, 20));
-
-    const wbBlob = XLSX.write(newWb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbBlob], { type: 'application/octet-stream' });
-    downloadBtn.href = URL.createObjectURL(blob);
-    downloadBtn.download = 'CMV_Pivot_Ready.xlsx';
-    downloadBtn.className = 'btn visible';
-
-    document.getElementById('statSheets').textContent = selectedSheets.length;
+    setProgress(95, 'Generating file...'); await tick();
+    const blob = new Blob([XLSX.write(newWb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
+    dlBtn.href = URL.createObjectURL(blob); dlBtn.download = 'pivot_output.xlsx'; dlBtn.className = 'btn-dl visible';
+    document.getElementById('statSheets').textContent = sheets.length;
     document.getElementById('statRows').textContent = totalRows.toLocaleString();
-    document.getElementById('statAudiences').textContent = audienceSet.size;
-    statsRow.className = 'stats-row visible';
-
-    setProgress(100);
-    setStatus(`Done. ${totalRows.toLocaleString()} rows across ${selectedSheets.length} sheet(s). Ready to download.`);
-  } catch (err) {
-    setStatus('Something went wrong: ' + err.message, true);
-  }
+    document.getElementById('statAud').textContent = audSet.size;
+    outStats.className = 'out-stats visible';
+    setProgress(100, 'Done');
+    setStatus(`${totalRows.toLocaleString()} rows across ${sheets.length} sheet(s).`, 'ok');
+  } catch (err) { setStatus('Error: ' + err.message, 'err'); }
 }
+
+function tick() { return new Promise(r => setTimeout(r, 15)); }
 </script>
 </body>
 </html>
