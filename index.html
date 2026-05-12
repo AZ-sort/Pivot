@@ -3,45 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pivot</title>
+<title>pivot — AZ-Sort</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:         #f5f4f0;
+    --cream:      #faf7f2;
+    --cream2:     #f2ece2;
     --white:      #ffffff;
-    --black:      #0e0e0e;
-    --text:       #1c1c1c;
-    --muted:      #686460;
-    --muted2:     #a09c97;
-    --border:     #e2dfd9;
-    --border2:    #ccc8c2;
-    --teal:       #1a6b6b;
-    --teal-mid:   #1f8080;
-    --teal-soft:  #eef6f6;
-    --teal-light: #d0eaea;
-    --green:      #1a5c38;
+    --black:      #1a1714;
+    --text:       #2a2420;
+    --muted:      #7a6f68;
+    --muted2:     #b0a49c;
+    --terra:      #c45c3a;
+    --terra-soft: #faf0ec;
+    --terra-mid:  #d97050;
+    --border:     #e4ddd4;
+    --border2:    #cec5ba;
+    --green:      #1f6b40;
     --red:        #a83030;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    /* Dot grid */
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
     background-image: radial-gradient(circle, #c8c4bc 1px, transparent 1px);
     background-size: 24px 24px;
     background-attachment: fixed;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
   }
 
   /* NAV */
   nav {
     background: var(--black);
+    border-bottom: 2px solid var(--terra);
     height: 52px;
     display: flex;
     align-items: center;
@@ -49,8 +49,6 @@
     position: sticky;
     top: 0;
     z-index: 50;
-    /* Subtle teal underline */
-    border-bottom: 2px solid var(--teal);
   }
 
   .nav-inner {
@@ -63,16 +61,15 @@
   }
 
   .wordmark {
-    font-size: 14px;
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
     font-weight: 700;
     color: var(--white);
     letter-spacing: -0.02em;
+    text-decoration: none;
   }
 
-  .wordmark span {
-    color: var(--teal-mid);
-    /* The accent letter */
-  }
+  .wordmark em { font-style: italic; color: var(--terra-mid); font-weight: 300; }
 
   .nav-tag {
     font-size: 10px;
@@ -100,7 +97,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--teal);
+    color: var(--terra);
     margin-bottom: 12px;
   }
 
@@ -109,20 +106,21 @@
     display: block;
     width: 18px;
     height: 1.5px;
-    background: var(--teal);
+    background: var(--terra);
     flex-shrink: 0;
   }
 
   h1 {
-    font-size: 28px;
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
     font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
     color: var(--black);
     margin-bottom: 8px;
   }
 
-  h1 span { color: var(--teal); }
+  h1 em { font-style: italic; color: var(--terra); font-weight: 300; }
 
   .desc {
     font-size: 13px;
@@ -135,17 +133,16 @@
   .card {
     background: var(--white);
     border: 1px solid var(--border);
+    border-top: 3px solid var(--terra);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.07);
-    /* Accent bar */
-    border-top: 3px solid var(--teal);
   }
 
   /* TABS */
   .tabs {
     display: flex;
-    background: var(--bg);
+    background: var(--cream2);
     border-bottom: 1px solid var(--border);
   }
 
@@ -170,9 +167,9 @@
 
   .tab.active {
     background: var(--white);
-    color: var(--teal);
+    color: var(--terra);
     font-weight: 600;
-    border-bottom-color: var(--teal);
+    border-bottom-color: var(--terra);
   }
 
   .tab-sub {
@@ -191,16 +188,15 @@
     padding: 40px 20px;
     border: 1.5px dashed var(--border2);
     border-radius: 8px;
-    background: var(--bg);
+    background: var(--cream);
     text-align: center;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
 
   .drop-zone:hover, .drop-zone.drag-over {
-    background: var(--teal-soft);
-    background-image: none;
-    border-color: var(--teal);
+    background: var(--terra-soft);
+    border-color: var(--terra);
   }
 
   .drop-icon {
@@ -216,12 +212,12 @@
 
   .drop-zone:hover .drop-icon,
   .drop-zone.drag-over .drop-icon {
-    border-color: var(--teal);
-    color: var(--teal);
+    border-color: var(--terra);
+    color: var(--terra);
   }
 
   .drop-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-  .drop-hint  { font-size: 11px; color: var(--muted2); }
+  .drop-hint  { font-size: 11px; color: var(--muted2); font-family: 'DM Mono', monospace; }
   input[type="file"] { display: none; }
 
   /* SHEET SELECTOR */
@@ -246,9 +242,9 @@
     transition: border-color 0.12s, background 0.12s;
   }
 
-  .sheet-chip:hover { border-color: var(--teal); background: var(--teal-soft); }
+  .sheet-chip:hover { border-color: var(--terra); background: var(--terra-soft); }
   .sheet-chip input[type="checkbox"] {
-    display: block; accent-color: var(--teal);
+    display: block; accent-color: var(--terra);
     width: 12px; height: 12px; cursor: pointer;
   }
 
@@ -266,20 +262,18 @@
     transition: border-color 0.12s, background 0.12s;
   }
 
-  .aud-chip:hover { border-color: var(--teal); background: var(--teal-soft); }
+  .aud-chip:hover { border-color: var(--terra); background: var(--terra-soft); }
   .aud-chip input[type="checkbox"] {
-    display: block; accent-color: var(--teal);
+    display: block; accent-color: var(--terra);
     width: 11px; height: 11px; cursor: pointer;
   }
 
-  .aud-actions {
-    display: flex; gap: 8px; margin-bottom: 4px;
-  }
+  .aud-actions { display: flex; gap: 8px; margin-bottom: 4px; }
 
   .aud-toggle {
-    font-size: 10px; font-weight: 500; color: var(--teal);
+    font-size: 10px; font-weight: 500; color: var(--terra);
     background: none; border: none; cursor: pointer; padding: 0;
-    font-family: 'Inter', sans-serif; text-decoration: underline;
+    font-family: 'DM Sans', sans-serif; text-decoration: underline;
     text-underline-offset: 2px;
   }
 
@@ -288,18 +282,18 @@
 
   .btn-run {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 9px 18px; background: var(--teal); color: var(--white);
-    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    padding: 9px 18px; background: var(--terra); color: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
     border: none; border-radius: 5px; cursor: pointer;
     transition: opacity 0.12s, transform 0.1s;
   }
-  .btn-run:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-run:hover { opacity: 0.88; transform: translateY(-1px); }
   .btn-run:active { transform: none; }
 
   .btn-dl {
     display: none; align-items: center; gap: 6px;
     padding: 9px 18px; background: var(--black); color: var(--white);
-    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
     border: none; border-radius: 5px; cursor: pointer; text-decoration: none;
     transition: opacity 0.12s, transform 0.1s;
   }
@@ -310,16 +304,17 @@
   .prog-wrap { padding: 0 16px; margin-top: 10px; display: none; }
   .prog-wrap.visible { display: block; }
   .prog-track { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
-  .prog-fill  { height: 100%; background: var(--teal); width: 0%; transition: width 0.25s ease; }
-  .prog-label { font-size: 10px; color: var(--muted2); margin-top: 5px; }
+  .prog-fill  { height: 100%; background: var(--terra); width: 0%; transition: width 0.25s ease; }
+  .prog-label { font-size: 10px; color: var(--muted2); margin-top: 5px; font-family: 'DM Mono', monospace; }
 
   /* STATUS */
   .status-wrap { padding: 8px 16px 2px; display: none; }
   .status-wrap.visible { display: block; }
   .status-msg {
     font-size: 12px; color: var(--muted);
-    padding: 8px 11px; background: var(--bg);
+    padding: 8px 11px; background: var(--cream);
     border-left: 2px solid var(--border2); border-radius: 2px;
+    font-family: 'DM Mono', monospace;
   }
   .status-msg.ok  { border-left-color: var(--green); color: var(--green); }
   .status-msg.err { border-left-color: var(--red);   color: var(--red); }
@@ -331,15 +326,50 @@
   .stat { flex: 1; padding: 14px 18px; border-right: 1px solid var(--border); }
   .stat:last-child { border-right: none; }
   .stat-n {
-    font-size: 22px; font-weight: 700;
-    letter-spacing: -0.03em;
-    color: var(--teal); line-height: 1; margin-bottom: 2px;
+    font-family: 'Fraunces', serif;
+    font-size: 24px; font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--terra); line-height: 1; margin-bottom: 2px;
   }
   .stat-l { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    border-top: 2px solid var(--terra);
+    padding: 28px 32px;
+    margin-top: 80px;
+  }
+
+  .footer-inner {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-wordmark {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: rgba(255,255,255,0.35);
+    text-decoration: none;
+  }
+
+  .footer-wordmark em { font-style: italic; font-weight: 300; color: var(--terra-mid); }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+  }
 
   @media (max-width: 600px) {
     nav { padding: 0 16px; }
     main { padding: 32px 16px 60px; }
+    footer { padding: 24px 16px; }
   }
 </style>
 </head>
@@ -347,7 +377,7 @@
 
 <nav>
   <div class="nav-inner">
-    <span class="wordmark">pi<span>v</span>ot</span>
+    <a class="wordmark" href="https://az-sort.github.io/HomePage/">az<em>-</em>sort</a>
     <span class="nav-tag">Export reformatter</span>
   </div>
 </nav>
@@ -355,7 +385,7 @@
 <main>
   <div class="header">
     <div class="eyebrow">Data tool</div>
-    <h1>Raw export.<br><span>Pivot-ready.</span></h1>
+    <h1>Raw export.<br><em>Pivot-ready.</em></h1>
     <p class="desc">Upload a Nielsen CMV or GWI export and get a clean flat table with all audiences unpivoted.</p>
   </div>
 
@@ -418,6 +448,13 @@
     </div>
   </div>
 </main>
+
+<footer>
+  <div class="footer-inner">
+    <a class="footer-wordmark" href="https://az-sort.github.io/HomePage/">az<em>-</em>sort</a>
+    <span class="footer-note">github.com/az-sort</span>
+  </div>
+</footer>
 
 <script>
 let activeTab = 'cmv', wb = null, detectedAudiences = [];
@@ -494,7 +531,6 @@ function load(file) {
       const names = wb.SheetNames;
       setProgress(40, `${names.length} sheet(s) found`);
 
-      // Build sheet chips
       sheetList.innerHTML = '';
       names.forEach(name => {
         const lbl = document.createElement('label');
@@ -503,7 +539,6 @@ function load(file) {
         sheetList.appendChild(lbl);
       });
 
-      // Detect audiences from first sheet
       detectAudiences(wb.Sheets[names[0]]);
 
       sheetWrap.className = 'sheet-select-wrap visible';
@@ -666,8 +701,6 @@ function parseGWICharts(ws, selAud) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
   if (raw.length < 16) return [];
 
-  // Charts format: row 14 = audience names, row 15 = variable names, row 16+ = data
-  // col 0 = question, col 1 = attribute, col 2+ = values
   const SKIP = new Set(['', 'short label question', 'attributes', 'nan']);
   const audRow = raw[14] || [];
   const varRow = raw[15] || [];
@@ -683,7 +716,6 @@ function parseGWICharts(ws, selAud) {
     }
     if (vv != null && !SKIP.has(String(vv).trim().toLowerCase()) && cur) {
       const v = String(vv).trim();
-      // Only add first occurrence per audience (handles duplicate variable names across audiences)
       if (!avc.hasOwnProperty(cur + '|||' + v)) {
         if (!varSet.includes(v)) varSet.push(v);
         avc[cur + '|||' + v] = c;
@@ -741,7 +773,6 @@ async function convert(sheets, selAud) {
       prog += step; setProgress(Math.round(prog), `Processed: ${name}`); await tick();
     }
 
-    // Build log sheet
     const tabLabel = activeTab === 'cmv' ? 'Nielsen CMV (Multizoom)' : activeTab === 'gwi-charts' ? 'GWI Charts' : 'GWI Crosstabs';
     const logData = [
       ['pivot — Conversion Log'],
