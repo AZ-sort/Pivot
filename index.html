@@ -515,16 +515,39 @@ function load(file) {
 
 function detectAudiences(ws) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-  const audRow = activeTab === 'cmv' ? (raw[1] || []) : (raw[14] || []);
-  const startCol = activeTab === 'cmv' ? 1 : 2;
+  const SKIP = new Set(['', 'name', 'metric', 'question', 'nan']);
+  let audRow, startCol;
+
+  if (activeTab === 'cmv') {
+    audRow = raw[1] || [];
+    startCol = 1;
+  } else if (activeTab === 'gwi-charts') {
+    // Charts: row 14 = audience names, col 2+
+    audRow = raw[14] || [];
+    startCol = 2;
+  } else {
+    // Dynamically find Question row, audience row is one below
+    let questionRow = -1;
+    for (let i = 0; i < raw.length; i++) {
+      if ((raw[i] || []).some(c => c != null && String(c).trim() === 'Question')) {
+        questionRow = i; break;
+      }
+    }
+    audRow = questionRow !== -1 ? (raw[questionRow + 1] || []) : [];
+    startCol = 0;
+  }
+
   const seen = new Set();
   detectedAudiences = [];
   for (let c = startCol; c < audRow.length; c++) {
-    if (audRow[c] != null && String(audRow[c]).trim()) {
+    if (audRow[c] != null) {
       const a = String(audRow[c]).trim();
-      if (!seen.has(a)) { seen.add(a); detectedAudiences.push(a); }
+      if (a && !SKIP.has(a.toLowerCase()) && !seen.has(a)) {
+        seen.add(a); detectedAudiences.push(a);
+      }
     }
   }
+
   audList.innerHTML = '';
   if (detectedAudiences.length > 0) {
     detectedAudiences.forEach(aud => {
@@ -577,28 +600,115 @@ function parseCMV(ws, selAud) {
   return rows;
 }
 
-function parseGWI(ws, selAud) {
+function parseGWICrosstabs(ws, selAud) {
   const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-  if (raw.length < 17) return [];
-  const audRow = raw[14] || [], varRow = raw[15] || [];
+  if (raw.length < 10) return [];
+
+  const SKIP = new Set(['', 'name', 'metric', 'question', 'nan']);
+  let questionRow = -1;
+  for (let i = 0; i < raw.length; i++) {
+    if ((raw[i] || []).some(c => c != null && String(c).trim() === 'Question')) {
+      questionRow = i; break;
+    }
+  }
+  if (questionRow === -1) return [];
+
+  const audRow   = raw[questionRow + 1] || [];
+  const varRow   = raw[questionRow + 2] || [];
+  const dataStart = questionRow + 3;
+
+  let metricCol = varRow.findIndex(v => v != null && String(v).trim() === 'Metric');
+  if (metricCol === -1) metricCol = 2;
+  const qCol    = Math.max(0, metricCol - 1);
+  const attrCol = metricCol;
+
   const avc = {}, order = [], varSet = [];
   let cur = null;
-  for (let c = 2; c < varRow.length; c++) {
-    if (audRow[c] != null && String(audRow[c]).trim()) { cur = String(audRow[c]).trim(); if (!order.includes(cur)) order.push(cur); }
-    if (varRow[c] != null && String(varRow[c]).trim() && cur) { const v = String(varRow[c]).trim(); if (!varSet.includes(v)) varSet.push(v); avc[cur + '|||' + v] = c; }
+  for (let c = 0; c < varRow.length; c++) {
+    const av = audRow[c];
+    const vv = varRow[c];
+    if (av != null && !SKIP.has(String(av).trim().toLowerCase())) {
+      cur = String(av).trim();
+      if (!order.includes(cur)) order.push(cur);
+    }
+    if (vv != null && !SKIP.has(String(vv).trim().toLowerCase()) && cur) {
+      const v = String(vv).trim();
+      if (!varSet.includes(v)) varSet.push(v);
+      avc[cur + '|||' + v] = c;
+    }
   }
+
   if (!order.length) return [];
   const filteredOrder = selAud.length ? order.filter(a => selAud.includes(a)) : order;
   const rows = [];
-  for (let i = 16; i < raw.length; i++) {
+
+  for (let i = dataStart; i < raw.length; i++) {
     const row = raw[i];
     if (!row) continue;
-    const q = row[0] != null ? String(row[0]).trim() : '';
-    const attr = row[1] != null ? String(row[1]).trim() : '';
+    let q    = row[qCol]    != null ? String(row[qCol]).trim()    : '';
+    let attr = row[attrCol] != null ? String(row[attrCol]).trim() : '';
+    if (q === 'nan' || q === 'NaN') q = '';
+    if (attr === 'nan' || attr === 'NaN') attr = '';
     if (!q && !attr) continue;
     for (const aud of filteredOrder) {
       const r = { Question: q, Attributes: attr, 'Target Audience': aud };
-      for (const v of varSet) { const ci = avc[aud + '|||' + v]; r[v] = (ci != null && row[ci] != null) ? row[ci] : ''; }
+      for (const v of varSet) {
+        const ci = avc[aud + '|||' + v];
+        r[v] = (ci != null && row[ci] != null) ? row[ci] : '';
+      }
+      rows.push(r);
+    }
+  }
+  return rows;
+}
+
+function parseGWICharts(ws, selAud) {
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+  if (raw.length < 16) return [];
+
+  // Charts format: row 14 = audience names, row 15 = variable names, row 16+ = data
+  // col 0 = question, col 1 = attribute, col 2+ = values
+  const SKIP = new Set(['', 'short label question', 'attributes', 'nan']);
+  const audRow = raw[14] || [];
+  const varRow = raw[15] || [];
+
+  const avc = {}, order = [], varSet = [];
+  let cur = null;
+  for (let c = 0; c < varRow.length; c++) {
+    const av = audRow[c];
+    const vv = varRow[c];
+    if (av != null && !SKIP.has(String(av).trim().toLowerCase())) {
+      cur = String(av).trim();
+      if (!order.includes(cur)) order.push(cur);
+    }
+    if (vv != null && !SKIP.has(String(vv).trim().toLowerCase()) && cur) {
+      const v = String(vv).trim();
+      // Only add first occurrence per audience (handles duplicate variable names across audiences)
+      if (!avc.hasOwnProperty(cur + '|||' + v)) {
+        if (!varSet.includes(v)) varSet.push(v);
+        avc[cur + '|||' + v] = c;
+      }
+    }
+  }
+
+  if (!order.length) return [];
+  const filteredOrder = selAud.length ? order.filter(a => selAud.includes(a)) : order;
+  const rows = [];
+
+  for (let i = 16; i < raw.length; i++) {
+    const row = raw[i];
+    if (!row) continue;
+    let q    = row[0] != null ? String(row[0]).trim() : '';
+    let attr = row[1] != null ? String(row[1]).trim() : '';
+    if (q === 'nan' || q === 'NaN') q = '';
+    if (attr === 'nan' || attr === 'NaN') attr = '';
+    if (!q && !attr) continue;
+    for (const aud of filteredOrder) {
+      const r = { Question: q, Attributes: attr, 'Target Audience': aud };
+      for (const v of varSet) {
+        const ci = avc[aud + '|||' + v];
+        r[v] = (ci != null && row[ci] != null) ? row[ci] : '';
+      }
       rows.push(r);
     }
   }
@@ -617,7 +727,7 @@ async function convert(sheets, selAud) {
 
     for (const name of sheets) {
       const ws = wb.Sheets[name];
-      const rows = activeTab === 'cmv' ? parseCMV(ws, selAud) : parseGWI(ws, selAud);
+      const rows = activeTab === 'cmv' ? parseCMV(ws, selAud) : activeTab === 'gwi-charts' ? parseGWICharts(ws, selAud) : parseGWICrosstabs(ws, selAud);
       rows.forEach(r => audSet.add(r['Target Audience'])); totalRows += rows.length;
 
       const headers = rows.length ? Object.keys(rows[0]) : [];
